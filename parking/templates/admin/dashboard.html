@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}管理首页{% endblock %}
+{% block page_title %}管理首页{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ total_today }}</div>
+                        <div class="label">今日停车</div>
+                    </div>
+                    <i class="bi bi-car-front"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ income_today }}</div>
+                        <div class="label">今日收入(元)</div>
+                    </div>
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ spaces_free }}/{{ spaces_total }}</div>
+                        <div class="label">空闲/总车位</div>
+                    </div>
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ pending_records }}</div>
+                        <div class="label">待处理订单</div>
+                    </div>
+                    <i class="bi bi-receipt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>最近停车记录</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead><tr><th>车牌</th><th>车位</th><th>进场</th><th>状态</th></tr></thead>
+                            <tbody>
+                            {% for r in recent_records %}
+                            <tr>
+                                <td><span class="badge bg-dark">{{ r.plate_number }}</span></td>
+                                <td>{{ r.space.space_no|default:"-" }}</td>
+                                <td>{{ r.entry_time|date:"H:i" }}</td>
+                                <td>{% if r.exit_time %}<span class="badge bg-secondary">已离场</span>{% else %}<span class="badge bg-success">停放中</span>{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">暂无记录</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>车位概况</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around text-center">
+                        <div>
+                            <div class="fs-1 fw-bold text-success">{{ spaces_free }}</div>
+                            <div class="text-muted">空闲</div>
+                        </div>
+                        <div>
+                            <div class="fs-1 fw-bold text-danger">{{ spaces_occupied }}</div>
+                            <div class="text-muted">占用</div>
+                        </div>
+                        <div>
+                            <div class="fs-1 fw-bold text-secondary">{{ spaces_total }}</div>
+                            <div class="text-muted">总计</div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 20px;">
+                        <div class="progress-bar bg-success" style="width: {% widthratio spaces_free spaces_total 100 %}%{{ spaces_free }}">{{ spaces_free }}</div>
+                        <div class="progress-bar bg-danger" style="width: {% widthratio spaces_occupied spaces_total 100 %}%">{{ spaces_occupied }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

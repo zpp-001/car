@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}首页 - 智能停车场管理系统{% endblock %}
+{% block content %}
+<div class="login-page">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="py-5">
+                    <i class="bi bi-car-front-fill text-white" style="font-size: 5rem;"></i>
+                    <h1 class="text-white mt-4 display-4 fw-bold">智能停车场管理系统</h1>
+                    <p class="text-white-50 lead mb-4">轻量化 · 高效 · 便捷 — 小型停车场管理首选</p>
+                    <div class="mt-5">
+                        <a href="{% url 'login' %}" class="btn btn-light btn-lg px-5 me-3 rounded-pill">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>立即登录
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg px-5 rounded-pill">
+                            <i class="bi bi-person-plus me-2"></i>注册账号
+                        </a>
+                    </div>
+                </div>
+                <div class="row mt-5 g-4">
+                    <div class="col-md-4">
+                        <div class="card bg-white bg-opacity-10 border-0 text-white p-4 h-100">
+                            <i class="bi bi-building fs-1 mb-3"></i>
+                            <h5>车位管理</h5>
+                            <p class="text-white-50 small mb-0">实时掌握车位状态，智能分配空闲车位</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-white bg-opacity-10 border-0 text-white p-4 h-100">
+                            <i class="bi bi-cash-coin fs-1 mb-3"></i>
+                            <h5>自动计费</h5>
+                            <p class="text-white-50 small mb-0">灵活配置收费规则，系统自动计算费用</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-white bg-opacity-10 border-0 text-white p-4 h-100">
+                            <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
+                            <h5>数据统计</h5>
+                            <p class="text-white-50 small mb-0">可视化运营数据，辅助管理决策</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

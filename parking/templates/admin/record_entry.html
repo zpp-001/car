@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}登记进场{% endblock %}
+{% block page_title %}登记进场{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>车辆进场登记</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">车牌号</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-car-front"></i></span>
+                                <input type="text" name="plate_number" class="form-control form-control-lg" required placeholder="例如：京A12345">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">分配车位</label>
+                            <select name="space_id" class="form-select">
+                                <option value="">自动分配</option>
+                                {% for s in free_spaces %}
+                                <option value="{{ s.id }}">{{ s.space_no }} ({{ s.zone|default:"-" }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 py-2"><i class="bi bi-check-circle me-2"></i>确认进场</button>
+                        <a href="{% url 'admin_records' %}" class="btn btn-secondary w-100 mt-2">取消</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

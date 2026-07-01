@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}缴费{% endblock %}
+{% block page_title %}缴费{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-cash me-2"></i>确认缴费</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-car-front-fill text-primary" style="font-size: 3rem;"></i>
+                        <h4 class="mt-2"><span class="badge bg-dark fs-5">{{ record.plate_number }}</span></h4>
+                    </div>
+                    <table class="table">
+                        <tr><td>进场时间</td><td>{{ record.entry_time|date:"Y-m-d H:i:s" }}</td></tr>
+                        <tr><td>离场时间</td><td>{{ record.exit_time|date:"Y-m-d H:i:s" }}</td></tr>
+                        <tr><td>停车时长</td><td>{{ record.duration_minutes }} 分钟</td></tr>
+                        <tr><td>车位编号</td><td>{{ record.space.space_no|default:"-" }}</td></tr>
+                        <tr class="table-warning"><td><strong>应缴费用</strong></td><td><strong style="font-size: 1.5rem; color: #dc3545;">¥{{ record.fee }}</strong></td></tr>
+                    </table>
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100 py-2">
+                            <i class="bi bi-check-circle me-2"></i>确认支付 ¥{{ record.fee }}
+                        </button>
+                        <a href="{% url 'order_list' %}" class="btn btn-secondary w-100 mt-2">取消</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

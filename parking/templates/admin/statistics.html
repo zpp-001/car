@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}数据统计{% endblock %}
+{% block page_title %}数据统计{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ today_count }}</div>
+                        <div class="label">今日停车</div>
+                    </div>
+                    <i class="bi bi-car-front"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ today_income }}</div>
+                        <div class="label">今日收入(元)</div>
+                    </div>
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ usage_rate }}%</div>
+                        <div class="label">车位使用率</div>
+                    </div>
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ fixed_spaces }}</div>
+                        <div class="label">固定/临时车位</div>
+                    </div>
+                    <i class="bi bi-layers"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>近7日停车趋势</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>车位状态分布</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="pieChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+var dailyStats = {{ daily_stats|safe }};
+new Chart(document.getElementById('chart'), {
+    type: 'bar',
+    data: {
+        labels: dailyStats.map(d => d.date),
+        datasets: [{
+            label: '停车数量',
+            data: dailyStats.map(d => d.count),
+            backgroundColor: 'rgba(13, 110, 253, 0.6)',
+            borderColor: '#0d6efd',
+            borderWidth: 1,
+            yAxisID: 'y'
+        }, {
+            label: '收入(元)',
+            data: dailyStats.map(d => d.income),
+            backgroundColor: 'rgba(25, 135, 84, 0.6)',
+            borderColor: '#198754',
+            borderWidth: 1,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+            y: { beginAtZero: true, position: 'left', title: { display: true, text: '停车数' } },
+            y1: { beginAtZero: true, position: 'right', title: { display: true, text: '收入(元)' }, grid: { drawOnChartArea: false } }
+        }
+    }
+});
+
+new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['空闲', '占用', '其他'],
+        datasets: [{
+            data: [{{ free }}, {{ occupied }}, {{ total_spaces|add:"-free"|add:"-occupied" }}],
+            backgroundColor: ['#198754', '#dc3545', '#6c757d']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+</script>
+{% endblock %}

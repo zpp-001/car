@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}我的车辆{% endblock %}
+{% block page_title %}我的车辆{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-truck me-2"></i>车辆列表</h5>
+            <a href="{% url 'car_add' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> 添加车辆</a>
+        </div>
+        <div class="card-body">
+            {% if cars %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>车牌号</th><th>车辆类型</th><th>固定车位</th><th>绑定车位</th><th>添加时间</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for car in cars %}
+                    <tr>
+                        <td><span class="badge bg-dark fs-6">{{ car.plate_number }}</span></td>
+                        <td>{{ car.get_car_type_display }}</td>
+                        <td>{% if car.is_bound_fixed %}<span class="badge bg-success">已绑定</span>{% else %}<span class="badge bg-secondary">未绑定</span>{% endif %}</td>
+                        <td>{{ car.bound_space.space_no|default:"-" }}</td>
+                        <td>{{ car.created_at|date:"Y-m-d" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'car_bind_space' car.id %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-geo-alt"></i> 绑定车位
+                                </a>
+                                <a href="{% url 'car_delete' car.id %}" class="btn btn-danger btn-sm" onclick="return confirm('确定删除该车辆？')">
+                                    <i class="bi bi-trash"></i> 删除
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-truck fs-1 d-block mb-3"></i>
+                <p>还没有添加车辆，点击上方按钮添加</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

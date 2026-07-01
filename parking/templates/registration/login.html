@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}登录 - 智能停车场管理系统{% endblock %}
+{% block content %}
+<div class="login-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card login-card shadow-lg">
+                    <div class="login-header">
+                        <i class="bi bi-car-front-fill" style="font-size: 3rem;"></i>
+                        <h3 class="mt-2">智能停车场管理系统</h3>
+                        <p class="mb-0 text-white-50">请登录您的账号</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">用户名</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <input type="text" name="username" class="form-control" required placeholder="请输入用户名">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">密码</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input type="password" name="password" class="form-control" required placeholder="请输入密码">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>登录
+                            </button>
+                            <div class="text-center">
+                                <span class="text-muted">还没有账号？</span>
+                                <a href="{% url 'register' %}" class="text-decoration-none">立即注册</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

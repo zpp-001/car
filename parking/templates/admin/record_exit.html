@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}确认离场{% endblock %}
+{% block page_title %}确认离场{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-box-arrow-right me-2"></i>确认离场</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-car-front-fill text-danger" style="font-size: 3rem;"></i>
+                        <h4 class="mt-2"><span class="badge bg-dark fs-5">{{ record.plate_number }}</span></h4>
+                        <p class="text-muted">车位：{{ record.space.space_no|default:"-" }}</p>
+                    </div>
+                    <table class="table">
+                        <tr><td>进场时间</td><td>{{ record.entry_time|date:"Y-m-d H:i:s" }}</td></tr>
+                        <tr><td>当前时间</td><td><span id="now-time"></span></td></tr>
+                        <tr><td>停车时长</td><td><span id="duration"></span></td></tr>
+                    </table>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-100 py-2"><i class="bi bi-check-circle me-2"></i>确认离场并计费</button>
+                        <a href="{% url 'admin_records' %}" class="btn btn-secondary w-100 mt-2">取消</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function updateTime() {
+    var now = new Date();
+    document.getElementById('now-time').textContent = now.toLocaleString('zh-CN');
+    var entry = new Date('{{ record.entry_time|date:"Y/m/d H:i:s" }}');
+    var diff = Math.floor((now - entry) / 60000);
+    if (diff < 0) diff = 0;
+    var h = Math.floor(diff / 60);
+    var m = diff % 60;
+    document.getElementById('duration').textContent = h + '小时' + m + '分钟';
+}
+updateTime();
+setInterval(updateTime, 60000);
+</script>
+{% endblock %}

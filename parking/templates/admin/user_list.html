@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block page_title %}用户管理{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="bi bi-people me-2"></i>用户列表</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>用户名</th><th>手机号</th><th>邮箱</th><th>注册时间</th><th>账号状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td><strong>{{ u.username }}</strong></td>
+                        <td>{{ u.phone|default:"-" }}</td>
+                        <td>{{ u.email|default:"-" }}</td>
+                        <td>{{ u.date_joined|date:"Y-m-d" }}</td>
+                        <td>{% if u.status %}<span class="badge bg-success">启用</span>{% else %}<span class="badge bg-danger">禁用</span>{% endif %}</td>
+                        <td>
+                            <a href="{% url 'admin_user_toggle' u.id %}" class="btn btn-sm {% if u.status %}btn-warning{% else %}btn-success{% endif %}" onclick="return confirm('确定{{ u.status|yesno:"禁用,启用" }}用户 {{ u.username }}？')">
+                                <i class="bi {% if u.status %}bi-pause-circle{% else %}bi-play-circle{% endif %}"></i>
+                                {{ u.status|yesno:"禁用,启用" }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-4 text-muted">暂无用户</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

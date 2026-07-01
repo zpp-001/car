@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}费用查询{% endblock %}
+{% block page_title %}费用查询{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>我的订单</h5>
+        </div>
+        <div class="card-body">
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>车牌号</th><th>车位</th><th>进场时间</th><th>离场时间</th><th>时长</th><th>费用</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for o in orders %}
+                    <tr>
+                        <td><span class="badge bg-dark">{{ o.plate_number }}</span></td>
+                        <td>{{ o.space.space_no|default:"-" }}</td>
+                        <td>{{ o.entry_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ o.exit_time|date:"Y-m-d H:i"|default:"-" }}</td>
+                        <td>{% if o.duration_minutes > 0 %}{{ o.duration_minutes }}分钟{% else %}-{% endif %}</td>
+                        <td>¥{{ o.fee }}</td>
+                        <td>{% if o.pay_status == 'paid' %}<span class="badge bg-success">已缴费</span>{% else %}<span class="badge bg-warning text-dark">待缴费</span>{% endif %}</td>
+                        <td>
+                            {% if o.pay_status == 'unpaid' and o.exit_time %}
+                            <a href="{% url 'order_pay' o.id %}" class="btn btn-success btn-sm"><i class="bi bi-cash"></i> 缴费</a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-receipt fs-1 d-block mb-3"></i>
+                <p>暂无订单数据</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

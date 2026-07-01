@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}车位查询{% endblock %}
+{% block page_title %}车位查询{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card bg-primary-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ spaces.count }}</div>
+                        <div class="label">总车位</div>
+                    </div>
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-success-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ free_count|default:spaces|length }}</div>
+                        <div class="label">空闲车位</div>
+                    </div>
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-info-gradient">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="number">{{ spaces|length }}</div>
+                        <div class="label">占用/锁定</div>
+                    </div>
+                    <i class="bi bi-x-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>车位分布图</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small mb-3"><i class="bi bi-info-circle"></i> 点击空闲固定车位可快速绑定到车辆</p>
+            <div class="row g-3">
+                {% for space in spaces %}
+                <div class="col-3 col-md-2 col-lg-1 text-center">
+                    {% if space.status == "free" and space.space_type == "fixed" and my_cars %}
+                    <a href="#" class="text-decoration-none d-block" data-bs-toggle="modal" data-bs-target="#bindModal"
+                       data-space-id="{{ space.id }}" data-space-no="{{ space.space_no }}">
+                    {% endif %}
+                    <div class="space-item space-{% if space.status == "free" %}free{% elif space.status == "occupied" %}occupied{% else %}locked{% endif %}">
+                        <small>{{ space.space_no }}</small>
+                        <div><small>
+                            {% if space.status == "free" and space.space_type == "fixed" and my_cars %}
+                                <span class="text-primary fw-bold"><i class="bi bi-plus-circle"></i> 绑定</span>
+                            {% elif space.status == "free" %}
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            {% elif space.status == "occupied" %}
+                                <i class="bi bi-car-front-fill text-danger"></i>
+                            {% else %}
+                                <i class="bi bi-lock-fill text-secondary"></i>
+                            {% endif %}
+                        </small></div>
+                    </div>
+                    {% if space.status == "free" and space.space_type == "fixed" and my_cars %}
+                    </a>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4 text-muted"><p>暂无车位数据</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 绑定弹窗 -->
+<div class="modal fade" id="bindModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="bindForm" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-geo-alt me-2"></i>绑定固定车位</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>将车位 <strong id="modalSpaceNo"></strong> 绑定到以下车辆：</p>
+                    <input type="hidden" name="space_id" id="modalSpaceId">
+                    <div class="list-group">
+                        {% for car in my_cars %}
+                        <label class="list-group-item d-flex align-items-center">
+                            <input class="form-check-input me-2" type="radio" name="car_id" value="{{ car.id }}" required>
+                            <span class="badge bg-dark me-2">{{ car.plate_number }}</span>
+                            <small class="text-muted">{{ car.get_car_type_display }}</small>
+                            {% if car.bound_space %}
+                            <small class="ms-auto text-warning">已绑定 {{ car.bound_space.space_no }}</small>
+                            {% endif %}
+                        </label>
+                        {% empty %}
+                        <p class="text-muted mb-0">暂无车辆，请先 <a href="{% url 'car_add' %}">添加车辆</a></p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> 确认绑定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var bindModal = document.getElementById('bindModal');
+    bindModal.addEventListener('show.bs.modal', function (event) {
+        var btn = event.relatedTarget;
+        var spaceId = btn.getAttribute('data-space-id');
+        var spaceNo = btn.getAttribute('data-space-no');
+        document.getElementById('modalSpaceId').value = spaceId;
+        document.getElementById('modalSpaceNo').textContent = spaceNo;
+    });
+});
+</script>
+{% endblock %}

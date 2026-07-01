@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}车位管理{% endblock %}
+{% block page_title %}车位管理{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-grid-3x3-gap me-2"></i>车位列表</h5>
+            <a href="{% url 'admin_space_add' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> 新增车位</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>编号</th><th>类型</th><th>状态</th><th>绑定用户</th><th>区域</th><th>添加时间</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for s in spaces %}
+                    <tr>
+                        <td><strong>{{ s.space_no }}</strong></td>
+                        <td>{% if s.space_type == 'fixed' %}<span class="badge bg-primary">固定</span>{% else %}<span class="badge bg-info">临时</span>{% endif %}</td>
+                        <td>{% if s.status == 'free' %}<span class="badge bg-success">空闲</span>{% elif s.status == 'occupied' %}<span class="badge bg-danger">占用</span>{% else %}<span class="badge bg-secondary">锁定</span>{% endif %}</td>
+                        <td>{{ s.bound_user.username|default:"-" }}</td>
+                        <td>{{ s.zone|default:"-" }}</td>
+                        <td>{{ s.created_at|date:"Y-m-d" }}</td>
+                        <td>
+                            <a href="{% url 'admin_space_edit' s.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            {% if s.status != 'occupied' %}
+                            <a href="{% url 'admin_space_delete' s.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定删除车位 {{ s.space_no }}？')"><i class="bi bi-trash"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-4 text-muted">暂无车位数据</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

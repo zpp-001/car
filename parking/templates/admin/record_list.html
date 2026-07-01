@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}停车记录管理{% endblock %}
+{% block page_title %}停车记录管理{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>停车记录</h5>
+            <a href="{% url 'admin_record_entry' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> 登记进场</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>车牌号</th><th>车位</th><th>进场时间</th><th>离场时间</th><th>时长</th><th>费用</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td><span class="badge bg-dark">{{ r.plate_number }}</span></td>
+                        <td>{{ r.space.space_no|default:"-" }}</td>
+                        <td>{{ r.entry_time|date:"Y-m-d H:i" }}</td>
+                        <td>{% if r.exit_time %}{{ r.exit_time|date:"Y-m-d H:i" }}{% else %}<span class="badge bg-success">停放中</span>{% endif %}</td>
+                        <td>{% if r.duration_minutes > 0 %}{{ r.duration_minutes }}分{% else %}-{% endif %}</td>
+                        <td>¥{{ r.fee }}</td>
+                        <td>{% if r.pay_status == 'paid' %}<span class="badge bg-success">已结算</span>{% elif r.pay_status == 'unpaid' %}<span class="badge bg-warning text-dark">未结算</span>{% else %}<span class="badge bg-secondary">已取消</span>{% endif %}</td>
+                        <td>
+                            {% if not r.exit_time %}
+                            <a href="{% url 'admin_record_exit' r.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-box-arrow-right"></i> 离场</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4 text-muted">暂无停车记录</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

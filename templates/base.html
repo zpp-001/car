@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}智能停车场管理系统{% endblock %}</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+        body { background: #f0f2f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            padding-top: 60px; z-index: 100; transition: all 0.3s;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.7); padding: 12px 20px;
+            border-radius: 8px; margin: 2px 8px; transition: all 0.2s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #fff; background: rgba(255,255,255,0.1);
+        }
+        .sidebar .nav-link i { margin-right: 10px; width: 20px; text-align: center; }
+        .main-content { margin-left: 240px; padding: 20px; min-height: 100vh; }
+        .navbar-top {
+            position: fixed; top: 0; left: 240px; right: 0; height: 56px;
+            background: #fff; z-index: 99; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+        }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        .stat-card { padding: 20px; border-radius: 12px; color: #fff; }
+        .stat-card i { font-size: 2rem; opacity: 0.8; }
+        .stat-card .number { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .label { font-size: 0.85rem; opacity: 0.9; }
+        .bg-primary-gradient { background: linear-gradient(135deg, #0d6efd, #0a58ca); }
+        .bg-success-gradient { background: linear-gradient(135deg, #198754, #157347); }
+        .bg-warning-gradient { background: linear-gradient(135deg, #ffc107, #d39e00); }
+        .bg-info-gradient { background: linear-gradient(135deg, #0dcaf0, #0aa2c0); }
+        .table th { font-weight: 600; color: #495057; border-top: none; }
+        .table td { vertical-align: middle; }
+        .badge-status { padding: 4px 12px; border-radius: 20px; font-weight: 500; font-size: 0.8rem; }
+        .footer { text-align: center; padding: 20px; color: #6c757d; font-size: 0.85rem; }
+        .login-page { min-height: 100vh; display: flex; align-items: center; background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 50%, #052c65 100%); }
+        .login-card { border-radius: 16px; border: none; overflow: hidden; }
+        .login-header { background: linear-gradient(135deg, #0d6efd, #0a58ca); color: #fff; padding: 30px; text-align: center; }
+        .space-item { text-align: center; padding: 15px; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+        .space-item:hover { transform: scale(1.05); }
+        .space-free { background: #d1e7dd; border: 2px solid #198754; }
+        .space-occupied { background: #f8d7da; border: 2px solid #dc3545; }
+        .space-locked { background: #e2e3e5; border: 2px solid #6c757d; }
+        @media (max-width: 768px) {
+            .sidebar { left: -240px; }
+            .sidebar.show { left: 0; }
+            .main-content { margin-left: 0; }
+            .navbar-top { left: 0; }
+        }
+    </style>
+</head>
+<body>
+{% if user.is_authenticated %}
+    <nav class="sidebar" id="sidebar">
+        <div class="text-center mb-4 px-3">
+            <i class="bi bi-car-front-fill text-white" style="font-size: 2rem;"></i>
+            <h6 class="text-white mt-2 mb-0">{{ user.username }}</h6>
+            <small class="text-white-50">
+                {% if user.role == 'admin' %}管理员
+                {% else %}普通用户{% endif %}
+            </small>
+        </div>
+        <hr class="text-white-50 my-2">
+        <ul class="nav flex-column">
+            {% if user.role == 'admin' %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/admin/dashboard/' %}active{% endif %}" href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>管理首页
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/admin/spaces/' in request.path %}active{% endif %}" href="{% url 'admin_spaces' %}">
+                    <i class="bi bi-grid-3x3-gap"></i>车位管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/admin/users/' in request.path %}active{% endif %}" href="{% url 'admin_users' %}">
+                    <i class="bi bi-people"></i>用户管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/admin/records/' in request.path %}active{% endif %}" href="{% url 'admin_records' %}">
+                    <i class="bi bi-journal-text"></i>停车记录
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/admin/orders/' in request.path %}active{% endif %}" href="{% url 'admin_orders' %}">
+                    <i class="bi bi-receipt"></i>订单管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/admin/charge-rules/' in request.path %}active{% endif %}" href="{% url 'admin_charge_rules' %}">
+                    <i class="bi bi-currency-dollar"></i>收费规则
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/admin/statistics/' in request.path %}active{% endif %}" href="{% url 'admin_statistics' %}">
+                    <i class="bi bi-graph-up"></i>数据统计
+                </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}">
+                    <i class="bi bi-house-door"></i>首页
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/cars/' in request.path %}active{% endif %}" href="{% url 'car_list' %}">
+                    <i class="bi bi-truck"></i>我的车辆
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/spaces/' in request.path %}active{% endif %}" href="{% url 'space_list' %}">
+                    <i class="bi bi-geo-alt"></i>车位查询
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/records/' in request.path %}active{% endif %}" href="{% url 'record_list' %}">
+                    <i class="bi bi-clock-history"></i>停车记录
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if '/orders/' in request.path %}active{% endif %}" href="{% url 'order_list' %}">
+                    <i class="bi bi-credit-card"></i>费用查询
+                </a>
+            </li>
+            {% endif %}
+            <li class="nav-item mt-3">
+                <hr class="text-white-50 my-2">
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="bi bi-person-circle"></i>个人信息
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right"></i>退出登录
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <nav class="navbar-top">
+        <button class="btn btn-sm d-md-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <span class="fw-bold">{% block page_title %}智能停车场管理系统{% endblock %}</span>
+        <div>
+            <span class="text-muted small me-2">{{ user.username }}</span>
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
+    </nav>
+{% endif %}
+
+    <div class="main-content" style="{% if user.is_authenticated %}padding-top: 76px;{% endif %}">
+        {% if messages %}
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+            {% for message in messages %}
+            <div class="toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 show" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+        <div class="footer">
+            <p class="mb-0">&copy; 2024 智能停车场管理系统 v1.0</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 自动隐藏 Toast
+        document.querySelectorAll('.toast').forEach(el => {
+            setTimeout(() => { el.classList.remove('show'); }, 3000);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

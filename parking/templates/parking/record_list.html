@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}停车记录{% endblock %}
+{% block page_title %}停车记录{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>我的停车记录</h5>
+        </div>
+        <div class="card-body">
+            {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>车牌号</th><th>车位</th><th>进场时间</th><th>离场时间</th><th>时长</th><th>费用</th><th>状态</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td><span class="badge bg-dark">{{ r.plate_number }}</span></td>
+                        <td>{{ r.space.space_no|default:"-" }}</td>
+                        <td>{{ r.entry_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ r.exit_time|date:"Y-m-d H:i"|default:"进行中" }}</td>
+                        <td>{% if r.duration_minutes > 0 %}{{ r.duration_minutes }}分钟{% else %}-{% endif %}</td>
+                        <td>¥{{ r.fee }}</td>
+                        <td>{% if r.pay_status == 'paid' %}<span class="badge bg-success">已结算</span>{% elif r.pay_status == 'unpaid' %}<span class="badge bg-warning text-dark">未结算</span>{% else %}<span class="badge bg-secondary">已取消</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>暂无停车记录</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
