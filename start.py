@@ -17,17 +17,17 @@ if __name__ == "__main__":
     _log("Running database migrations ...")
     ret = subprocess.run([python, manage_py, "migrate", "--noinput"])
     if ret.returncode != 0:
-        _log(f"Migration failed (code={ret.returncode}), exiting.")
-        sys.exit(ret.returncode)
-    _log("Migrations complete.")
+        _log(f"Migration failed (code={ret.returncode}), skipping -- gunicorn will still start.")
+    else:
+        _log("Migrations complete.")
 
     # Step 2: Collect static files
     _log("Collecting static files ...")
     ret = subprocess.run([python, manage_py, "collectstatic", "--noinput"])
     if ret.returncode != 0:
-        _log(f"collectstatic failed (code={ret.returncode}), exiting.")
-        sys.exit(ret.returncode)
-    _log("Static files collected.")
+        _log(f"collectstatic failed (code={ret.returncode}), skipping -- gunicorn will still start.")
+    else:
+        _log("Static files collected.")
 
     # Step 3: Start gunicorn
     port = os.environ.get("PORT", "8000")
