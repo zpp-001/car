@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
 from django.db.models.functions import TruncDate
+from django.http import HttpResponse
 from datetime import timedelta
 from decimal import Decimal
 import json
@@ -37,6 +38,12 @@ def calculate_fee(entry_time, exit_time):
         fee = charge_rule.daily_max
 
     return fee
+
+
+
+def health_check(request):
+    """Lightweight healthcheck - returns 200 quickly, no DB/template overhead."""
+    return HttpResponse("ok", content_type="text/plain", status=200)
 
 
 # ==================== Auth Views ====================
