@@ -151,3 +151,5 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL", "True").strip().lower() in ("true", "1")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Exempt healthcheck from SSL redirect ? Railway probes via HTTP and needs a 200.
+    SECURE_REDIRECT_EXEMPT = [r"^health/"]
