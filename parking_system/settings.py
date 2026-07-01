@@ -57,20 +57,48 @@ WSGI_APPLICATION = "parking_system.wsgi.application"
 
 # ---------- Database (Railway) ----------
 def _get_db_config():
-    """Build database config from environment variables (Railway-friendly)."""
+    """Build database config from environment variables.
+    Auto-detects PostgreSQL or MySQL from DATABASE_URL scheme.
+    """
     database_url = os.environ.get("DATABASE_URL") or os.environ.get("MYSQL_URL")
 
     if database_url:
         parsed = urllib.parse.urlparse(database_url)
-        db_name = parsed.path.lstrip("/")
+        scheme = parsed.scheme.lower()
+
+        if scheme.startswith("postgres"):
+            engine = "django.db.backends.postgresql"
+            db_name = parsed.path.lstrip("/")
+            return {
+                "ENGINE": engine,
+                "NAME": db_name or os.environ.get("PGDATABASE", "parking_system"),
+                "USER": parsed.username or os.environ.get("PGUSER", "postgres"),
+                "PASSWORD": parsed.password or os.environ.get("PGPASSWORD", ""),
+                "HOST": parsed.hostname or os.environ.get("PGHOST", "localhost"),
+                "PORT": str(parsed.port or os.environ.get("PGPORT", "5432")),
+            }
+        else:
+            engine = "django.db.backends.mysql"
+            db_name = parsed.path.lstrip("/")
+            return {
+                "ENGINE": engine,
+                "NAME": db_name or os.environ.get("MYSQL_DATABASE", "parking_system"),
+                "USER": parsed.username or os.environ.get("MYSQL_USER", "root"),
+                "PASSWORD": parsed.password or os.environ.get("MYSQL_PASSWORD", "123456"),
+                "HOST": parsed.hostname or os.environ.get("MYSQL_HOST", "localhost"),
+                "PORT": str(parsed.port or os.environ.get("MYSQL_PORT", "3306")),
+                "OPTIONS": {"charset": "utf8mb4"},
+            }
+
+    engine_name = os.environ.get("DB_ENGINE", "mysql").lower()
+    if engine_name == "postgresql":
         return {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": db_name or os.environ.get("MYSQL_DATABASE", "parking_system"),
-            "USER": parsed.username or os.environ.get("MYSQL_USER", "root"),
-            "PASSWORD": (parsed.password or os.environ.get("MYSQL_PASSWORD", "123456")),
-            "HOST": parsed.hostname or os.environ.get("MYSQL_HOST", "localhost"),
-            "PORT": str(parsed.port or os.environ.get("MYSQL_PORT", "3306")),
-            "OPTIONS": {"charset": "utf8mb4"},
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("PGDATABASE", "parking_system"),
+            "USER": os.environ.get("PGUSER", "postgres"),
+            "PASSWORD": os.environ.get("PGPASSWORD", ""),
+            "HOST": os.environ.get("PGHOST", "localhost"),
+            "PORT": os.environ.get("PGPORT", "5432"),
         }
 
     return {
