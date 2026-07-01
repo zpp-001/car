@@ -21,7 +21,33 @@ if __name__ == "__main__":
     else:
         _log("Migrations complete.")
 
-    # Step 2: Collect static files
+    # Step 2: Seed default admin if DB is available and no users exist
+    _log("Checking for default admin user ...")
+    ret = subprocess.run([
+        python, manage_py, "shell", "-c",
+        "import os, django; "
+        "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'parking_system.settings'); "
+        "django.setup(); "
+        "from parking.models import User; "
+        "from django.contrib.auth.hashers import make_password; "
+        "if not User.objects.exists(): "
+        "    User.objects.create_superuser("
+        "        username=os.environ.get('ADMIN_USER', 'admin'), "
+        "        password=os.environ.get('ADMIN_PASSWORD', 'admin123'), "
+        "        role='admin', "
+        "    ); "
+        "    print('[start.py] Default admin user created.'); "
+        "else: "
+        "    print('[start.py] Users already exist, skipping seed.')"
+    ], capture_output=True, text=True)
+    if ret.returncode == 0:
+        for line in ret.stdout.strip().splitlines():
+            if "[start.py]" in line:
+                _log(line.replace("[start.py] ", ""))
+    else:
+        _log("Seed admin skipped (DB may be unavailable): " + ret.stderr.strip()[:120])
+
+    # Step 3: Collect static files
     _log("Collecting static files ...")
     ret = subprocess.run([python, manage_py, "collectstatic", "--noinput"])
     if ret.returncode != 0:
