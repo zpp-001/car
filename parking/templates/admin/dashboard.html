@@ -98,8 +98,8 @@
                         </div>
                     </div>
                     <div class="progress mt-3" style="height: 20px;">
-                        <div class="progress-bar bg-success" style="width: {% widthratio spaces_free spaces_total 100 %}%{{ spaces_free }}">{{ spaces_free }}</div>
-                        <div class="progress-bar bg-danger" style="width: {% widthratio spaces_occupied spaces_total 100 %}%">{{ spaces_occupied }}</div>
+                        <div class="progress-bar bg-success" style="width: {% if spaces_total %}{% widthratio spaces_free spaces_total 100 %}{% else %}0{% endif %}%{{ spaces_free }}">{{ spaces_free }}</div>
+                        <div class="progress-bar bg-danger" style="width: {% if spaces_total %}{% widthratio spaces_occupied spaces_total 100 %}{% else %}0{% endif %}%">{{ spaces_occupied }}</div>
                     </div>
                 </div>
             </div>

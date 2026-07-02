@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.utils import OperationalError
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.db.models import Count, Sum, Q
@@ -60,8 +61,13 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     if request.method == 'POST':
-        form = LoginForm(data=request.POST)
-        if form.is_valid():
+        form = LoginForm(request, data=request.POST)
+        try:
+            form_valid = form.is_valid()
+        except OperationalError:
+            messages.error(request, '数据库服务未就绪，请稍后再试')
+            return render(request, 'registration/login.html', {'form': form})
+        if form_valid:
             user = form.get_user()
             login(request, user)
             messages.success(request, f'欢迎回来，{user.username}！')
@@ -81,13 +87,17 @@ def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.phone = form.cleaned_data['phone']
-            user.role = 'user'
-            user.save()
-            login(request, user)
-            messages.success(request, '注册成功！')
-            return redirect('dashboard')
+            try:
+                user = form.save(commit=False)
+                user.phone = form.cleaned_data['phone']
+                user.role = 'user'
+                user.save()
+                login(request, user)
+                messages.success(request, '注册成功！')
+                return redirect('dashboard')
+            except OperationalError:
+                messages.error(request, '数据库服务未就绪，请稍后再试')
+                return redirect('register')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
