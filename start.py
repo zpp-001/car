@@ -1,4 +1,3 @@
-"""Startup entrypoint - runs migrations, collects staticfiles, then starts gunicorn."""
 import os
 import sys
 import subprocess
@@ -21,25 +20,27 @@ if __name__ == "__main__":
     else:
         _log("Migrations complete.")
 
-    # Step 2: Seed default admin if DB is available and no users exist
+    # Step 2: Seed default admin if DB is available and no admin user exists
     _log("Checking for default admin user ...")
-    ret = subprocess.run([
-        python, manage_py, "shell", "-c",
-        "import os, django; "
-        "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'parking_system.settings'); "
-        "django.setup(); "
-        "from parking.models import User; "
-        "from django.contrib.auth.hashers import make_password; "
-        "if not User.objects.exists(): "
-        "    User.objects.create_superuser("
-        "        username=os.environ.get('ADMIN_USER', 'admin'), "
-        "        password=os.environ.get('ADMIN_PASSWORD', 'admin123'), "
-        "        role='admin', "
-        "    ); "
-        "    print('[start.py] Default admin user created.'); "
-        "else: "
-        "    print('[start.py] Users already exist, skipping seed.')"
-    ], capture_output=True, text=True)
+    shell_script = (
+        "import os, django;"
+        "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'parking_system.settings');"
+        "django.setup();"
+        "from parking.models import User;"
+        "admin_username = os.environ.get('ADMIN_USER', 'admin');"
+        "admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123');"
+        "admin = User.objects.filter(username=admin_username).first();"
+        "if not admin:"
+        "    User.objects.create_superuser(username=admin_username, password=admin_password, role='admin');"
+        "    print('[start.py] Default admin user created.');"
+        "elif admin.role != 'admin':"
+        "    admin.role = 'admin';"
+        "    admin.save(update_fields=['role']);"
+        "    print('[start.py] Admin user role fixed to admin.');"
+        "else:"
+        "    print('[start.py] Admin user already exists, skipping seed.')"
+    )
+    ret = subprocess.run([python, manage_py, "shell", "-c", shell_script], capture_output=True, text=True)
     if ret.returncode == 0:
         for line in ret.stdout.strip().splitlines():
             if "[start.py]" in line:
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     else:
         _log("Static files collected.")
 
-    # Step 3: Start gunicorn
+    # Step 4: Start gunicorn
     port = os.environ.get("PORT", "8000")
     _log(f"Starting gunicorn on 0.0.0.0:{port} ...")
     os.execvp("gunicorn", [
